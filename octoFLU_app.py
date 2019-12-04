@@ -8,6 +8,9 @@ import wx
 import os
 import os.path
 import subprocess
+from shutil import which
+from shutil import copyfile
+import subprocess
 
 # === Globals
 version="v1.0"
@@ -133,14 +136,20 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def OnRun(self, event):
-        wx.Shell(command="echo running...")
-        wx.Shell(command="echo "+self.mafft_fp.GetPath())
-        wx.Shell(command=self.mafft_fp.GetPath() + " --auto")
-#        full_cmd = self.mafft_fp.GetPath() + " --auto " + self.reference_fp.GetPath() + " > temp.txt"
-#        #print(full_cmd)
-#        wx.Shell(command= "echo " + full_cmd) 
-#        #wx.Shell(command=full_cmd)
-#        wx.Shell(command='/Users/jenchang/bin/mafft.bat --auto')
+        outDir = self.input_fp.GetPath()+"_output"
+        
+        if not os.path.exists(outDir):
+            os.mkdir(outDir)
+        else:
+            print(outDir + " already exists")
+
+#        wx.Shell(command="echo running...")
+#        wx.Shell(command="echo " + self.mafft_fp.GetPath()
+        # ==== Create your Blast Database
+        subprocess.call([self.makeblastdb_fp.GetPath(),"-in",self.reference_fp.GetPath(),"-dbtype","nucl"])
+        # ==== Search your blast database
+        subprocess.call([self.blastn_fp.GetPath(),"-db",self.reference_fp.GetPath(),"-query",self.input_fp.GetPath(),"-num_alignments","1","-outfmt","6", "-out",outDir+"/blast_output.txt"])
+#        wx.Shell(command= "\"" + self.mafft_fp.GetPath() + "\"")
         
 
 if __name__ == '__main__':
